@@ -1,15 +1,16 @@
-# Detecting Car Lane Lines using Computer Vision
+# Road Lane Line Detection using Computer Vision models
 
 Detecting lane lines is a fundamental task for autonomous vehicles while driving on the road. It is the building block to other path planning and control actions like breaking and steering. Lets get started implementing them!
 
-![Final output of this project](https://i.imgur.com/Oc2hfIz.gif)
+<a href="https://imgflip.com/gif/1s6e4v"><img src="https://i.imgflip.com/1s6e4v.gif" title="made at imgflip.com" style="width: 200px;"/></a></br>
 *Final output of this project*
 
-Before we work with videos, lets work with static images since it is much easier to debug with. Here is the image we will be working with.
+**Step 0: Introduction**
 
 Before we work with videos, lets work with static images since it is much easier to debug with. Here is the image we will be working with.
 
-![](https://cdn-images-1.medium.com/max/1600/1*tcoCQz1m6Wo3e3SeVdxA0g.jpeg)
+
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*tcoCQz1m6Wo3e3SeVdxA0g.jpeg" width="450" ></a></br>
 *Input image*
 
 I am running python 3 with the following imports in a jupyter notebook:
@@ -25,7 +26,7 @@ import sys
 %matplotlib inline
 ```
 
-The **TLDR** version of the lane detection pipeline is as follows:
+The lane detection pipeline follows these steps:
 1. Pre-process image using grayscale and gaussian blur
 1. Apply canny edge detection to the image
 1. Apply masking region to the image
@@ -33,7 +34,7 @@ The **TLDR** version of the lane detection pipeline is as follows:
 1. Extrapolate the lines found in the hough transform to construct the left and right lane lines
 1. Add the extrapolated lines to the input image
 
-**Step 1: Pre process image**
+**Step 1: Pre-processing of image**
 
 We grayscale the input image which is needed for canny edge detection.
 
@@ -51,8 +52,7 @@ grayscaled = grayscale(image)
 plt.imshow(grayscaled, cmap='gray')
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*HQy8nXyATCAhojIJjL3LMw.png)
-
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*HQy8nXyATCAhojIJjL3LMw.png" width="450" ></a></br>
 *Gray-scaled image*
 
 We then apply a gaussian smoothing function to the image. Again, this is needed for the canny edge detection to average out anomalous gradients in the image.
@@ -84,8 +84,7 @@ maxThreshold = 200
 edgeDetectedImage = canny(gaussianBlur, minThreshold, maxThreshold)
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*_UoTSNqieJ0NrbcPw9WHlQ.png)
-
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*_UoTSNqieJ0NrbcPw9WHlQ.png" width="450" ></a></br>
 *Notice the edge detector captures all the lane lines, along with surrounding edges like trees*
 
 **Step 3: Mask out points that are not in the region of interest**
@@ -127,8 +126,7 @@ pts = np.array([[lowerLeftPoint, upperLeftPoint, upperRightPoint, lowerRightPoin
 masked_image = region_of_interest(edgeDetectedImage, pts)
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*wzqUGBAvwBLS1ODOsLj1Jw.png)
-
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*wzqUGBAvwBLS1ODOsLj1Jw.png" width="450" ></a></br>
 *Removed all pixels not in the region of interest*
 
 **Step 4: Hough Transform**
@@ -169,8 +167,7 @@ max_line_gap = 20
 houged = hough_lines(masked_image, rho, theta, threshold, min_line_len, max_line_gap)
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*ZzCjMl3XC4SWgKjH19PUgg.png)
-
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*ZzCjMl3XC4SWgKjH19PUgg.png" width="450" ></a></br>
 *The hough transform identifies the lane lines in the image*
 
 **Step 5: Extrapolate the individual, small lines and construct the left and right lane lines**
@@ -239,7 +236,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
         cv2.line(img, (upper_right_x, ymin_global), (lower_right_x, ymax_global), color, thickness)
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*5Hdk5YjyFN_1kNc9AgKafw.png)
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*5Hdk5YjyFN_1kNc9AgKafw.png" width="450" ></a></br>
 
 *Extrapolated lane lines*
 
@@ -266,8 +263,56 @@ def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
 colored_image = weighted_img(houged, image)
 ```
 
-![](https://cdn-images-1.medium.com/max/1600/1*mYDIxa6gcM6lSYX-XDRfKQ.png)
-
+<a href="url"><img src="https://cdn-images-1.medium.com/max/1600/1*mYDIxa6gcM6lSYX-XDRfKQ.png" width="450" ></a></br>
 *Line lanes overlaid on the input image*
 
-Finally, we can add this pipeline of image transformations to videos, frame by frame. For more details on how to do this, the entire implementation of this pipeline and it’s application to videos can be found here.
+**Step 7: Add pipeline to video**
+
+Once we have designed and implemented the entire car lane detection pipeline, we apply the transformation frame by frame. We need a video of car driving on lane lines to do this.
+
+```python
+from moviepy.editor import VideoFileClip
+from IPython.display import HTML
+
+def process_image(image):
+    # grayscale the image
+    grayscaled = grayscale(image)
+
+    # apply gaussian blur
+    kernelSize = 5
+    gaussianBlur = gaussian_blur(grayscaled, kernelSize)
+
+    # canny
+    minThreshold = 100
+    maxThreshold = 200
+    edgeDetectedImage = canny(gaussianBlur, minThreshold, maxThreshold)
+
+    # apply mask
+    lowerLeftPoint = [130, 540]
+    upperLeftPoint = [410, 350]
+    upperRightPoint = [570, 350]
+    lowerRightPoint = [915, 540]
+
+    pts = np.array([[lowerLeftPoint, upperLeftPoint, upperRightPoint, lowerRightPoint]], dtype=np.int32)
+    masked_image = region_of_interest(edgeDetectedImage, pts)
+
+    # hough lines
+    rho = 1
+    theta = np.pi/180
+    threshold = 30
+    min_line_len = 20 
+    max_line_gap = 20
+
+    houged = hough_lines(masked_image, rho, theta, threshold, min_line_len, max_line_gap)
+
+    # outline the input image
+    colored_image = weighted_img(houged, image)
+    return colored_image
+
+output = 'car_lane_detection.mp4'
+clip1 = VideoFileClip("insert_car_lane_video.mp4")
+white_clip = clip1.fl_image(process_image)
+%time white_clip.write_videofile(output, audio=False)
+```
+
+And there you have it: an end to end implementation of car lane detection in python!
