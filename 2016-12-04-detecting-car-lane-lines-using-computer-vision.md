@@ -1,13 +1,8 @@
----
-layout: post
-comments: true
-title:  "Detecting Car Lane Lines using Computer Vision"
-date:   2016-12-04 23:24:20 -0700
----
+# Detecting Car Lane Lines using Computer Vision
 
 Detecting lane lines is a fundamental task for autonomous vehicles while driving on the road. It is the building block to other path planning and control actions like breaking and steering. Lets get started implementing them!
 
-![Final output of this project](https://i.imgur.com/Oc2hfIz.gif "Final output of this project")
+![Final output of this project](https://i.imgur.com/Oc2hfIz.gif)
 *Final output of this project*
 
 Before we work with videos, lets work with static images since it is much easier to debug with. Here is the image we will be working with.
